@@ -6,7 +6,7 @@ import RollTheBall
 import ProblemState
 
 import Data.Hashable
-import Data.Graph.AStar
+--import Data.Graph.AStar
 import qualified Data.HashSet as H
 
 {-

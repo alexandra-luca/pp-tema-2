@@ -18,7 +18,7 @@ import ProblemState
 import Control.Monad (join)
 import Control.Arrow ((***))
 import Control.Monad.Trans.State.Lazy (runState, modify)
-import Data.Graph.AStar
+--import Data.Graph.AStar
 import qualified Data.HashSet as H
 
 testAddObject :: TestPP ()
@@ -167,7 +167,7 @@ testSolve = tests 9 10 [
             (checkSolve (solve level5 level5Solved))
    ]
 
-
+{-
 testBonus :: TestPP()
 testBonus = tests 10 20 [
 	testCond "hashWithSalt on different levels returns different values" 4
@@ -186,7 +186,7 @@ testBonus = tests 10 20 [
 				snd $ counterAStar trivialHeuristic start
 			countExpandedNonTrivial start = 
 				snd $ counterAStar nonTrivialHeuristic start
-
+-}
 
 main :: IO()
 main = runTestPP $ sequence_ [ testAddObject
@@ -198,7 +198,6 @@ main = runTestPP $ sequence_ [ testAddObject
                              , testbidirBFS
                              , testExtractPath
                              , testSolve
-                             , testBonus
                              ]
 
 move1String :: [Char]
