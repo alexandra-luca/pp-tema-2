@@ -75,6 +75,15 @@ charToCell c =
     if c == winLeft then (Finish West) else
     if c == winRight then (Finish East) else SpatiuGol
 
+
+isFinish (Finish _) = True
+isFinish _ = False
+isTube (Tub _ _) = True
+isTube _ = False
+isStart (Start _) = True
+isStart _ = False
+
+
 {-
     Tip de date pentru reprezentarea nivelului curent
 -}
@@ -100,7 +109,7 @@ getArrMaxCol arr = snd (snd (A.bounds arr))
 printArrLine arr i = (foldl (++) [] [show (arr A.! (i,j)) | j <- [0..(getArrMaxCol arr)]]) ++ [endl]
 
 instance Show Level 
-    where show (Level arr) = foldl (++) [] [printArrLine arr i | i <- [0..getArrMaxLine arr]]
+    where show (Level arr) = [endl] ++ (foldl (++) [] [printArrLine arr i | i <- [0..getArrMaxLine arr]])
 
 {-
     *** TODO ***
@@ -127,8 +136,15 @@ emptyLevel (x,y) = Level (A.array((0,0), (x,y))
     celula, dacă aceasta este liberă (emptySpace).
 -}
 
+
+isValidAndEmpty :: Position -> Level -> Bool
+isValidAndEmpty (i, j) (Level arr) = 
+    if (i < 0) || (j < 0) || (i > (getArrMaxLine arr)) || (j > (getArrMaxCol arr)) then False
+        else if arr A.! (i, j) == SpatiuGol then True else False
+
+
 addCell :: (Char, Position) -> Level -> Level
-addCell (char, pos) (Level arr) = if arr A.! pos == SpatiuGol then Level (arr A.// [(pos, (charToCell char))]) else Level arr
+addCell (char, pos) (Level arr) = if isValidAndEmpty pos (Level arr) then Level (arr A.// [(pos, (charToCell char))]) else Level arr
 
 
 {-
@@ -162,16 +178,13 @@ getAdjacentPosition (i,j) South = (i+1, j)
 getAdjacentPosition (i,j) West = (i, j-1)
 getAdjacentPosition (i,j) East = (i, j+1)
 
-canMoveCellIntoPosition :: Position -> Level -> Bool
-canMoveCellIntoPosition (i, j) (Level arr) = 
-    if (i < 0) || (j < 0) || (i > (getArrMaxLine arr)) || (j > (getArrMaxCol arr)) then False
-        else if arr A.! (i, j) == SpatiuGol then True else False
-
 moveCell :: Position -> Directions -> Level -> Level
 moveCell pos dir (Level arr) = 
-    if (canMoveCellIntoPosition adjpos (Level arr)) then
-        Level (arr A.// [(pos, SpatiuGol), (adjpos, arr A.! pos)])
-        else Level arr
+    if (isStart (arr A.! pos)) || (isFinish (arr A.! pos)) then (Level arr)
+        else
+            if (isValidAndEmpty adjpos (Level arr)) then
+                Level (arr A.// [(pos, SpatiuGol), (adjpos, arr A.! pos)])
+                else Level arr
     where adjpos = getAdjacentPosition pos dir
 
 {-
@@ -223,13 +236,6 @@ connection _ _ _ = False
     de tip inițial la cea de tip final.
     Este folosită în cadrul Interactive.
 -}
-
-isFinish (Finish _) = True
-isFinish _ = False
-isTube (Tub _ _) = True
-isTube _ = False
-isStart (Start _) = True
-isStart _ = False
 
 directiaCealaltaDecatAiaDinCareAmVenit dir (Tub dir1 dir2) = 
     if (dir == dir1) then dir2 else dir1

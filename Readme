@@ -1,4 +1,4 @@
-Pentru rularea testelor:
+sPentru rularea testelor:
       stack runhaskell RollTest.hs
 sau 
       stack exec ghci RollTest.hs 
