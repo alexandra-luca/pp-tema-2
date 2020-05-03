@@ -269,6 +269,22 @@ wonLevel (Level arr) =
         (connection (arr A.! startpos) adjcell startdir) && (wonL (Level arr) adjpos (directiaOpusa startdir))
 
 instance ProblemState Level (Position, Directions) where
-    successors = undefined
-    isGoal = undefined
-    reverseAction = undefined
+    successors (Level arr) = 
+        let lista_de_coordonate_si_celule = assocs arr
+            lista_de_coordonate = map (\x -> fst x) lista_de_coordonate_si_celule
+            lista_de_actiuni = 
+                foldl (\lista pos -> (pos, North):(pos, South):(pos, West):(pos, East):lista) 
+                    [] lista_de_coordonate
+            lista_de_actiuni_si_nivele_rezultate = 
+                map (\act -> (act, moveCell (fst act) (snd act) (Level arr))) lista_de_actiuni
+            lista_filtrata = filter (\act_si_level -> (Level arr) /= (snd act_si_level)) lista_de_actiuni_si_nivele_rezultate
+        in
+            lista_filtrata 
+
+    isGoal level = wonLevel level
+    reverseAction ((pos, dir), level) = 
+        let updated_level = moveCell pos dir level
+            adjpos = getAdjacentPosition pos dir
+            dirop = directiaOpusa dir
+        in 
+            ((adjpos, dirop), updated_level)

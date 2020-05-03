@@ -4,6 +4,9 @@
 module Search where
 
 import ProblemState
+
+import Data.Maybe
+
 {-
     *** TODO ***
 
@@ -17,26 +20,28 @@ import ProblemState
     * copiii, ce vor desemna stările învecinate
 -}
 
-data Node s a = UndefinedNode
+--   Node s a = Node stare actiune parinte adancime lista_de_copii
+data Node s a = Node s (Maybe a) (Maybe (Node s a)) Int [Node s a]
 
 {-
     *** TODO ***
     Gettere folosite pentru accesul la câmpurile nodului
 -}
+
 nodeState :: Node s a -> s
-nodeState = undefined
+nodeState (Node stare actiune parinte adancime copii) = stare
 
 nodeParent :: Node s a -> Maybe (Node s a)
-nodeParent = undefined
+nodeParent (Node stare actiune parinte adancime copii) = parinte
 
 nodeDepth :: Node s a -> Int
-nodeDepth = undefined
+nodeDepth (Node stare actiune parinte adancime copii) = adancime
 
 nodeAction :: Node s a -> Maybe a
-nodeAction = undefined
+nodeAction (Node stare actiune parinte adancime copii) = actiune
 
 nodeChildren :: Node s a -> [Node s a]
-nodeChildren = undefined
+nodeChildren (Node stare actiune parinte adancime copii) = copii
 
 {-
     *** TODO ***
@@ -46,8 +51,16 @@ nodeChildren = undefined
     având drept copii nodurile succesorilor stării curente.
 -}
 
+createNodeForState :: (ProblemState s a, Eq s) => s -> Maybe a -> Maybe (Node s a) -> Int -> Node s a
+createNodeForState stare actiune parinte adancime = 
+    let current_node = Node stare actiune parinte adancime lista_de_copii
+        lista_de_actiuni_si_noduri_viitoare = successors stare
+        lista_de_copii = if isGoal stare then [] else map (\x -> createNodeForState (snd x) (Just (fst x)) (Just current_node) (adancime + 1)) lista_de_actiuni_si_noduri_viitoare 
+    in
+        current_node
+
 createStateSpace :: (ProblemState s a, Eq s) => s -> Node s a
-createStateSpace = undefined
+createStateSpace stare = createNodeForState stare Nothing Nothing 0
 
 {-
     *** TODO ***
@@ -58,10 +71,30 @@ createStateSpace = undefined
 
 -}
 
+--         :: frontiera curenta -> (noduri nou-adaugate, noua frontiera)
+unPasDeBfs :: [Node s a] -> ([Node s a], [Node s a])
+unPasDeBfs [] = ([], [])
+unPasDeBfs frontiera =
+    let 
+        nod_curent = head frontiera
+        copii = nodeChildren nod_curent
+    in
+        (copii, (tail frontiera) ++ copii)
+
+-- aplicaBfs :: frontiera curenta -> [(nou-adaugate, noua frontiera)]
+aplicaBfs [] = []
+aplicaBfs frontiera = 
+    let 
+        -- pnf = pereche noduri noi si frontiera noua
+        pnf = unPasDeBfs frontiera
+        noduri_noi = fst pnf
+        noua_frontiera = snd pnf
+        rest_lista_bfs = aplicaBfs noua_frontiera
+    in
+        (noduri_noi, noua_frontiera):rest_lista_bfs
+
 bfs :: Ord s => Node s a -> [([Node s a], [Node s a])]
-bfs = undefined
-
-
+bfs nod = aplicaBfs [nod]
 
 {-
     *** TODO ***
@@ -85,8 +118,11 @@ bidirBFS = undefined
 
 -}
 
+
 extractPath :: Node s a -> [(Maybe a, s)]
-extractPath = undefined
+extractPath (Node stare actiune parinte adancime copii) = 
+    if (isNothing parinte) then [(Nothing, stare)]
+    else (extractPath (fromJust parinte)) ++ [(actiune, stare)]
 
 
 
