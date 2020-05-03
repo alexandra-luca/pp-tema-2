@@ -118,13 +118,10 @@ bidirBFS = undefined
 
 -}
 
-
 extractPath :: Node s a -> [(Maybe a, s)]
 extractPath (Node stare actiune parinte adancime copii) = 
     if (isNothing parinte) then [(Nothing, stare)]
     else (extractPath (fromJust parinte)) ++ [(actiune, stare)]
-
-
 
 {-
     *** TODO ***
